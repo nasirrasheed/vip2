@@ -1,17 +1,19 @@
-export default async function handler(req, res) {
+import type { VercelRequest, VercelResponse } from '@vercel/node';
+
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST") {
     return res.status(405).json({ reply: "Method not allowed" });
   }
 
-  let body = "";
-  try {
-    body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
-  } catch (err) {
-    return res.status(400).json({ reply: "Invalid JSON." });
-  }
+  const body = req.body;
 
-  const message = body?.message;
-  if (!message) return res.status(400).json({ reply: "Message is required." });
+  const message = typeof body === 'string'
+    ? JSON.parse(body)?.message
+    : body?.message;
+
+  if (!message) {
+    return res.status(400).json({ reply: "Message is required." });
+  }
 
   try {
     const openaiRes = await fetch("https://api.openai.com/v1/chat/completions", {
