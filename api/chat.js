@@ -3,7 +3,15 @@ export default async function handler(req, res) {
     return res.status(405).json({ reply: 'Method not allowed' });
   }
 
-  const { message } = req.body;
+  // ✅ Parse body manually on Vercel (Edge Functions don't auto-parse JSON)
+  let body = '';
+  try {
+    body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+  } catch (err) {
+    return res.status(400).json({ reply: 'Invalid JSON.' });
+  }
+
+  const message = body?.message;
   if (!message) return res.status(400).json({ reply: 'Message is required.' });
 
   try {
@@ -23,11 +31,11 @@ export default async function handler(req, res) {
     const data = await openaiRes.json();
 
     if (data.error) {
-      console.error("OpenAI Error:", data.error);
+      console.error("OpenAI API Error:", data.error);
       return res.status(500).json({ reply: 'AI error occurred.' });
     }
 
-    const reply = data.choices?.[0]?.message?.content || 'No response.';
+    const reply = data.choices?.[0]?.message?.content || 'Sorry, I couldn’t get that.';
     return res.status(200).json({ reply });
 
   } catch (err) {
