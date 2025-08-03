@@ -1,9 +1,10 @@
 export default async function handler(req, res) {
-  const message = req.body?.message;
-
-  if (!message) {
-    return res.status(400).json({ reply: 'Message is required.' });
+  if (req.method !== 'POST') {
+    return res.status(405).json({ reply: 'Method not allowed' });
   }
+
+  const { message } = req.body;
+  if (!message) return res.status(400).json({ reply: 'Message is required.' });
 
   try {
     const openaiRes = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -22,11 +23,11 @@ export default async function handler(req, res) {
     const data = await openaiRes.json();
 
     if (data.error) {
-      console.error("OpenAI API Error:", data.error);
+      console.error("OpenAI Error:", data.error);
       return res.status(500).json({ reply: 'AI error occurred.' });
     }
 
-    const reply = data?.choices?.[0]?.message?.content || 'Sorry, I couldn’t get that.';
+    const reply = data.choices?.[0]?.message?.content || 'No response.';
     return res.status(200).json({ reply });
 
   } catch (err) {
