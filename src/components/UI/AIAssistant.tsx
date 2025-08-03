@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
 const AIAssistant = () => {
   const [open, setOpen] = useState(false);
@@ -6,29 +6,29 @@ const AIAssistant = () => {
     { sender: "bot", text: "Hello! How can I help you with your VIP transport today?" },
   ]);
   const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(false);
 
   const handleSend = async () => {
-    if (!input.trim()) return;
+    if (!input) return;
 
     const newMessages = [...messages, { sender: "user", text: input }];
     setMessages(newMessages);
     setInput("");
-    setLoading(true);
 
     try {
       const res = await fetch("/api/chat", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({ message: input }),
       });
 
       const data = await res.json();
-      setMessages([...newMessages, { sender: "bot", text: data.reply }]);
+      const reply = data.reply || "No response from AI.";
+      setMessages([...newMessages, { sender: "bot", text: reply }]);
     } catch (err) {
+      console.error("Chat error:", err);
       setMessages([...newMessages, { sender: "bot", text: "AI error occurred." }]);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -46,23 +46,33 @@ const AIAssistant = () => {
           <div className="bg-black text-white p-3 font-bold">VIP Assistant</div>
           <div className="flex-1 p-2 overflow-y-auto space-y-2 text-sm">
             {messages.map((m, i) => (
-              <div key={i} className={`text-${m.sender === "bot" ? "left" : "right"}`}>
-                <span className={`inline-block p-2 rounded-lg max-w-[90%] ${m.sender === "bot" ? "bg-gray-100" : "bg-blue-100"}`}>
+              <div
+                key={i}
+                className={`text-${m.sender === "bot" ? "left" : "right"}`}
+              >
+                <span
+                  className={`inline-block p-2 rounded-lg ${
+                    m.sender === "bot" ? "bg-gray-100" : "bg-blue-100"
+                  }`}
+                >
                   {m.text}
                 </span>
               </div>
             ))}
-            {loading && <div className="text-left text-sm text-gray-400">Typing...</div>}
           </div>
           <div className="p-2 border-t flex">
             <input
               className="flex-1 p-2 border rounded-l-lg text-sm"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSend()}
               placeholder="Type your request..."
             />
-            <button className="bg-black text-white px-4 rounded-r-lg" onClick={handleSend}>Send</button>
+            <button
+              className="bg-black text-white px-4 rounded-r-lg"
+              onClick={handleSend}
+            >
+              Send
+            </button>
           </div>
         </div>
       )}
@@ -71,4 +81,3 @@ const AIAssistant = () => {
 };
 
 export default AIAssistant;
-
