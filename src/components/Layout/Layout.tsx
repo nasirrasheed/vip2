@@ -2,7 +2,7 @@ import React from 'react';
 import { Outlet } from 'react-router-dom';
 import Header from './Header';
 import Footer from './Footer';
-import AIAssistant from '../components/UI/AIAssistant'; // update the path if needed
+import AIAssistant from '../UI/AIAssistant'; // update the path if needed
 
 const Layout = () => {
   return (
